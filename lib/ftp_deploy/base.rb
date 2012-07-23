@@ -80,7 +80,7 @@ module FtpDeploy
       puts "Uploading file '#{local_element}' to '#{remote_element}'" if config[:verbose]
       
       if FileTest.directory?(local_element)
-        @ftp.mkdir(remote_element)
+        @ftp.mkdir(remote_element) rescue puts "error create folder but ok go on!"
       else
         @ftp.put element, remote_element
       end
