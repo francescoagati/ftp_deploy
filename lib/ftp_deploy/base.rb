@@ -5,9 +5,19 @@ module FtpDeploy
   class Base
     
     def initialize(cfg = nil, &block)
+      @logger=[]
       cfg.each_pair{ |k,v| config[k] = v } unless cfg.nil?
       self.instance_eval &block if block_given?
     end
+    
+    def log(msg)
+      @logger << msg
+    end
+    
+    def get_log
+      @logger.join("\n")
+    end
+    
     
     def config(&block)
       @config ||= Configuration.new do
@@ -64,10 +74,10 @@ module FtpDeploy
         filepath = File.join(dir, file)
         begin
           remove_all_below filepath
-          puts "deleting #{filepath}" if config[:verbose]
+          log "deleting #{filepath}" if config[:verbose]
           @ftp.rmdir filepath
         rescue
-          puts "deleting '#{filepath}'" if config[:verbose]
+          log "deleting '#{filepath}'" if config[:verbose]
           @ftp.delete filepath
         end
       end
@@ -77,13 +87,13 @@ module FtpDeploy
       local_element = element
       remote_element = element.gsub(local_base_dir, release_dir)
       
-      puts "Uploading file '#{local_element}' to '#{remote_element}'" if config[:verbose]
+      log "Uploading file '#{local_element}' to '#{remote_element}'" if config[:verbose]
       
       if FileTest.directory?(local_element)
         begin
           @ftp.mkdir(remote_element) 
         rescue Exception => e
-          puts "error create folder but ok go on!"
+          log "error create folder but ok go on!"
         end
         
       else
